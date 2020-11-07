@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ProductService } from 'src/app/services/product.service';
 import { Product } from 'src/app/common/product';
 import { ActivatedRoute } from '@angular/router';
+import {CartItem} from '../../common/cart-item';
+import {CartService} from '../../services/cart.service';
 
 @Component({
   selector: 'app-product-list',
@@ -11,17 +13,18 @@ import { ActivatedRoute } from '@angular/router';
 export class ProductListComponent implements OnInit {
 
   products: Product[] = [];
-  currentCategoryId: number = 1;
-  previousCategoryId: number = 1;
-  searchMode: boolean = false;
+  currentCategoryId = 1;
+  previousCategoryId = 1;
+  searchMode = false;
 
   // new properties for pagination
-  thePageNumber: number = 1;
-  thePageSize: number = 5;
-  theTotalElements: number = 0;
+  thePageNumber = 1;
+  thePageSize = 5;
+  theTotalElements = 0;
 
   constructor(private productService: ProductService,
-              private route: ActivatedRoute) { }
+              private route: ActivatedRoute,
+              private cartService: CartService) { }
 
   ngOnInit() {
     this.route.paramMap.subscribe(() => {
@@ -51,7 +54,7 @@ export class ProductListComponent implements OnInit {
       data => {
         this.products = data;
       }
-    )
+    );
   }
 
   handleListProducts() {
@@ -105,4 +108,12 @@ export class ProductListComponent implements OnInit {
     this.listProducts();
   }
 
+  addToCard(theProduct: Product): void {
+    console.log(theProduct.name + ' : ' + theProduct.unitPrice);
+
+    // todo the real work
+    const theCartItem = new CartItem(theProduct);
+
+    this.cartService.addToCard(theCartItem);
+  }
 }
