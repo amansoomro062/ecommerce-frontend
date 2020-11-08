@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder } from '@angular/forms';
-import { Luv2ShopFormService } from 'src/app/services/luv2-shop-form.service';
+import { ShopFormService } from 'src/app/services/shop-form.service';
 import { Country } from 'src/app/common/country';
 import { State } from 'src/app/common/state';
+import {CartService} from '../../services/cart.service';
+import {CartItem} from '../../common/cart-item';
 
 @Component({
   selector: 'app-checkout',
@@ -15,7 +17,7 @@ export class CheckoutComponent implements OnInit {
 
   totalPrice: number = 0;
   totalQuantity: number = 0;
-  
+
   creditCardYears: number[] = [];
   creditCardMonths: number[] = [];
 
@@ -23,13 +25,15 @@ export class CheckoutComponent implements OnInit {
 
   shippingAddressStates: State[] = [];
   billingAddressStates: State[] = [];
-  
-  
+  cartItems: CartItem[] = [];
+
+
   constructor(private formBuilder: FormBuilder,
-              private luv2ShopFormService: Luv2ShopFormService) { }
+              private luv2ShopFormService: ShopFormService,
+              private cartService: CartService) { }
 
   ngOnInit(): void {
-    
+
     this.checkoutFormGroup = this.formBuilder.group({
       customer: this.formBuilder.group({
         firstName: [''],
@@ -89,8 +93,28 @@ export class CheckoutComponent implements OnInit {
         this.countries = data;
       }
     );
+
+    this.listCartDetails();
   }
 
+  listCartDetails() {
+
+    // get a handle to the cart items
+    this.cartItems = this.cartService.cartItems;
+
+    // subscribe to the cart totalPrice
+    this.cartService.totalPrice.subscribe(
+      data => this.totalPrice = data
+    );
+
+    // subscribe to the cart totalQuantity
+    this.cartService.totalQuantity.subscribe(
+      data => this.totalQuantity = data
+    );
+
+    // compute cart total price and quantity
+    this.cartService.computeCartTotals();
+  }
   copyShippingAddressToBillingAddress(event) {
 
     if (event.target.checked) {
@@ -100,17 +124,17 @@ export class CheckoutComponent implements OnInit {
     else {
       this.checkoutFormGroup.controls.billingAddress.reset();
     }
-    
+
   }
 
   onSubmit() {
     console.log("Handling the submit button");
     console.log(this.checkoutFormGroup.get('customer').value);
     console.log("The email address is " + this.checkoutFormGroup.get('customer').value.email);
-  
+
     console.log("The shipping address country is " + this.checkoutFormGroup.get('shippingAddress').value.country.name);
     console.log("The shipping address state is " + this.checkoutFormGroup.get('shippingAddress').value.state.name);
-  
+
   }
 
   handleMonthsAndYears() {
@@ -153,7 +177,7 @@ export class CheckoutComponent implements OnInit {
       data => {
 
         if (formGroupName === 'shippingAddress') {
-          this.shippingAddressStates = data; 
+          this.shippingAddressStates = data;
         }
         else {
           this.billingAddressStates = data;
