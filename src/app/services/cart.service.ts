@@ -1,89 +1,100 @@
 import { Injectable } from '@angular/core';
-import {CartItem} from '../common/cart-item';
-import {Subject} from 'rxjs';
+import { CartItem } from '../common/cart-item';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CartService {
+
   cartItems: CartItem[] = [];
+
   totalPrice: Subject<number> = new Subject<number>();
   totalQuantity: Subject<number> = new Subject<number>();
 
   constructor() { }
 
-  addToCard(theCardItem: CartItem) {
-    // check if we already have the item in our card
-    let alreadyExistsInCard: boolean = false;
-    let existingCardItem: CartItem = undefined;
+  addToCart(theCartItem: CartItem) {
+
+    // check if we already have the item in our cart
+    let alreadyExistsInCart: boolean = false;
+    let existingCartItem: CartItem = undefined;
 
     if (this.cartItems.length > 0) {
-      // find the item in the card based on item id
-      existingCardItem = this.cartItems.find( tempCartItem => tempCartItem.id === theCardItem.id);
+      // find the item in the cart based on item id
 
-      //check if we found it
-      alreadyExistsInCard = (existingCardItem != undefined);
+      existingCartItem = this.cartItems.find( tempCartItem => tempCartItem.id === theCartItem.id );
+
+      // check if we found it
+      alreadyExistsInCart = (existingCartItem != undefined);
     }
 
-    if (alreadyExistsInCard) {
-      //increment the quantity of item
-      existingCardItem.quantity++;
-    } else {
+    if (alreadyExistsInCart) {
+      // increment the quantity
+      existingCartItem.quantity++;
+    }
+    else {
       // just add the item to the array
-      this.cartItems.push(theCardItem);
+      this.cartItems.push(theCartItem);
     }
 
-    // conpute cart total price and total quality
-
+    // compute cart total price and total quantity
     this.computeCartTotals();
   }
 
   computeCartTotals() {
-    let totalPriceValue : number = 0;
+
+    let totalPriceValue: number = 0;
     let totalQuantityValue: number = 0;
 
     for (let currentCartItem of this.cartItems) {
-      totalPriceValue += currentCartItem.quantity * currentCartItem.uniPrice;
+      totalPriceValue += currentCartItem.quantity * currentCartItem.unitPrice;
       totalQuantityValue += currentCartItem.quantity;
     }
 
-    // pulish the new values ... all subscribers will receive the new data
+    // publish the new values ... all subscribers will receive the new data
     this.totalPrice.next(totalPriceValue);
     this.totalQuantity.next(totalQuantityValue);
 
-    // log card data just for the debugging purposes
+    // log cart data just for debugging purposes
     this.logCartData(totalPriceValue, totalQuantityValue);
-
   }
 
   logCartData(totalPriceValue: number, totalQuantityValue: number) {
+
     console.log('Contents of the cart');
-    for (let tempCardItem of this.cartItems) {
-      const subTotalPrice = tempCardItem.quantity * tempCardItem.uniPrice;
-      console.log(`name: ${tempCardItem.name}, quantity: ${tempCardItem.quantity}, unitPrice: ${tempCardItem.uniPrice}, subtotalPrice=${subTotalPrice}`);
+    for (let tempCartItem of this.cartItems) {
+      const subTotalPrice = tempCartItem.quantity * tempCartItem.unitPrice;
+      console.log(`name: ${tempCartItem.name}, quantity=${tempCartItem.quantity}, unitPrice=${tempCartItem.unitPrice}, subTotalPrice=${subTotalPrice}`);
     }
 
-    console.log(`total price: ${totalPriceValue.toFixed(2)}, totalQuality: ${totalQuantityValue}`);
-    console.log('--------');
+    console.log(`totalPrice: ${totalPriceValue.toFixed(2)}, totalQuantity: ${totalQuantityValue}`);
+    console.log('----');
   }
 
-  decrementQuantity(tempCartItem: CartItem) {
-    tempCartItem.quantity--;
+  decrementQuantity(theCartItem: CartItem) {
 
-    if (tempCartItem.quantity === 0) {
-      this.remove(tempCartItem);
-    } else {
+    theCartItem.quantity--;
+
+    if (theCartItem.quantity === 0) {
+      this.remove(theCartItem);
+    }
+    else {
       this.computeCartTotals();
     }
   }
 
   remove(theCartItem: CartItem) {
-    //get index of item in the array
-    const itemIndex = this.cartItems.findIndex((tempCartItem => tempCartItem.id == theCartItem.id));
-    // if found, remove the item from the given array
-    if( itemIndex > -1) {
+
+    // get index of item in the array
+    const itemIndex = this.cartItems.findIndex( tempCartItem => tempCartItem.id === theCartItem.id );
+
+    // if found, remove the item from the array at the given index
+    if (itemIndex > -1) {
       this.cartItems.splice(itemIndex, 1);
+
       this.computeCartTotals();
     }
   }
+
 }

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import {CartItem} from '../../common/cart-item';
-import {CartService} from '../../services/cart.service';
+import { CartItem } from 'src/app/common/cart-item';
+import { CartService } from 'src/app/services/cart.service';
 
 @Component({
   selector: 'app-cart-details',
@@ -20,28 +20,33 @@ export class CartDetailsComponent implements OnInit {
   }
 
   listCartDetails() {
-    //get a handle to the cart items
+
+    // get a handle to the cart items
     this.cartItems = this.cartService.cartItems;
-    //subscribe to the cart total price
+
+    // subscribe to the cart totalPrice
     this.cartService.totalPrice.subscribe(
       data => this.totalPrice = data
     );
-    //subscribe to the card totalQuantity
-    this.cartService.totalQuantity.subscribe(
+
+    // subscribe to the cart totalQuantity
+    this.cartService.totalQuantity.subscribe( 
       data => this.totalQuantity = data
     );
-    //compute cart total price and quantity
+
+    // compute cart total price and quantity
     this.cartService.computeCartTotals();
   }
-  incrementQuantity(tempCartItem: CartItem) {
-    this.cartService.addToCard(tempCartItem);
+
+  incrementQuantity(theCartItem: CartItem) {
+    this.cartService.addToCart(theCartItem);
   }
 
-  decrementQuantity(tempCartItem: CartItem) {
-    this.cartService.decrementQuantity(tempCartItem);
+  decrementQuantity(theCartItem: CartItem) {
+    this.cartService.decrementQuantity(theCartItem);
   }
 
-  remove(tempCartItem: CartItem) {
-    this.cartService.remove(tempCartItem);
+  remove(theCartItem: CartItem) {
+    this.cartService.remove(theCartItem);
   }
 }
